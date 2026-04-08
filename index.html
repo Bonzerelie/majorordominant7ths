@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Major 7 vs Dominant 7</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="hero">
+      <div class="app-titleWrap titleModeWide" id="titleWrap" aria-label="Major 7 vs Dominant 7">
+        <img class="app-titleImg app-titleImgWide" id="titleImgWide" src="images/title.png" alt="7th Chords!"/>
+        <img class="app-titleImg app-titleImgWrapped" id="titleImgWrapped" src="images/titlewrapped.png" alt="7th Chords!"/>
+      </div>
+      <p class="app-subtitle">
+        Hint: listen to the emotional qualities of the chords!
+      </p>
+    </header>
+
+    <section class="controlsPanel controlsPanelActions" aria-label="actions">
+      <div class="control">
+        <div class="actionsRow actionsCentered">
+          <button id="beginBtn" type="button" class="primary pulse">Begin Game</button>
+          <button id="replayBtn" type="button" disabled>Replay Chord</button>
+          <button id="nextBtn" type="button" disabled>Next</button>
+          <button id="infoBtn" type="button">Help / Information</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="controlsPanel controlsPanelActions" aria-label="answers">
+      <div class="control">
+        <div class="actionsRow actionsCentered" id="answerButtonsContainer">
+          </div>
+
+        <div class="refSectionWrap" aria-label="reference chords">
+          <div class="refLabel">Reference Chords With Root 'C':</div>
+          <div class="actionsRow actionsCentered" id="refButtonsContainer">
+            </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="analysis" aria-label="feedback">
+      <div class="analysisGrid feedbackGridPitch">
+        <div class="analysisCard fixedFeedbackCard">
+          <div class="analysisLabel">Feedback</div>
+
+          <div class="feedbackStack">
+            <div class="analysisBody" id="feedbackOut" aria-live="polite">
+              Press <strong>Begin Game</strong> to start.
+            </div>
+
+            <div class="miniLegend miniLegendInCard" aria-hidden="true">
+              <span class="legendDot legendTone"></span> Chord tones
+            </div>
+            <div id="miniMount" class="mount miniMount miniMountInCard" aria-label="Chord diagram"></div>
+
+            <div id="compareSection" class="compareSection hidden">
+              <div class="compareLabel">Compare Chords:</div>
+              <div class="actionsRow actionsCentered" id="compareButtonsContainer">
+                </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="analysisCard scoreCardNarrow">
+          <div class="analysisLabel">Score Card</div>
+          <div class="scoreMeta" id="scoreMeta">Mode: Major 7 & Dominant 7</div>
+
+          <div class="scoreActions" style="margin-bottom: 16px;">
+            <input id="playerNameInput" type="text" inputmode="text" autocomplete="name" maxlength="32" placeholder="Click to enter your name" />
+            <button id="downloadScorecardBtn" type="button">Download Scorecard</button>
+          </div>
+
+          <div class="scoreGrid scoreGridVertical">
+            <div class="scoreItem"><span class="scoreK">Correct</span><span class="scoreV" id="correctOut">0</span></div>
+            <div class="scoreItem"><span class="scoreK">Incorrect</span><span class="scoreV" id="incorrectOut">0</span></div>
+            <div class="scoreItem"><span class="scoreK">Correct in a row</span><span class="scoreV" id="streakOut">0</span></div>
+            <div class="scoreItem"><span class="scoreK">Longest streak</span><span class="scoreV" id="longestOut">0</span></div>
+            <div class="scoreItem"><span class="scoreK">Total Percentage Correct</span><span class="scoreV" id="accuracyOut">0.0%</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="endnotes"></footer>
+  </div>
+
+  <div aria-labelledby="introTitle" aria-modal="true" class="modal hidden" id="introModal" role="dialog">
+    <div class="modalCard">
+      <img class="app-titleImg" src="images/title.png" style="margin: 0 auto; max-width: 100%;">
+      <div class="modalTitle" id="introTitle" style="margin-top: 10px;">Info & How to Play</div>
+      <div class="modalBody">
+        <p>This game tests your ability to distinguish between <strong>Major 7</strong> and <strong>Dominant 7</strong> chords! Both of these chords start with a standard Major triad, but they differ in the 4th note (the 7th interval) added on top.</p>
+        <p>Once you are in the game, press <strong>Begin Game</strong> to start. Listen carefully to the chord and decide which quality you hear.</p>
+        <p>Use the generated answer buttons (or your keyboard's <strong>Left/Right Arrow keys</strong>) to answer. You can press <strong>Replay Chord</strong> or <strong>'R'</strong> to listen again. Use <strong>Next</strong> or <strong>Spacebar</strong> to proceed.</p>
+      </div>
+      <div class="modalActions modalActionsCentered" style="margin-bottom: 2px;">
+        <button class="primary pulse" id="introBeginBtn" type="button">Advance To Game</button>
+      </div>
+    </div>
+  </div>
+
+  <div aria-labelledby="scoreModalTitle" aria-modal="true" class="modal hidden" id="scoreModal" role="dialog">
+    <div class="modalCard">
+      <div class="modalTitle" id="scoreModalTitle" style="margin-bottom: 16px;">Current game ended - here's your scorecard!</div>
+      <div class="modalBody">
+        <div class="analysisGrid" style="width: 100%;">
+          <div class="analysisCard scoreCardNarrow">
+            <div class="analysisLabel">Score Card</div>
+            <div class="scoreMeta" id="modalScoreMeta">Mode: Major 7 & Dominant 7</div>
+            <div class="scoreActions" style="margin-bottom: 16px;">
+              <input id="modalPlayerNameInput" type="text" inputmode="text" autocomplete="name" maxlength="32" placeholder="Click to enter your name" />
+              <button id="modalDownloadScorecardBtn" type="button">Download Scorecard</button>
+            </div>
+            <div class="scoreGrid scoreGridVertical">
+              <div class="scoreItem"><span class="scoreK">Correct</span><span class="scoreV" id="modalCorrectOut">0</span></div>
+              <div class="scoreItem"><span class="scoreK">Incorrect</span><span class="scoreV" id="modalIncorrectOut">0</span></div>
+              <div class="scoreItem"><span class="scoreK">Correct in a row</span><span class="scoreV" id="modalStreakOut">0</span></div>
+              <div class="scoreItem"><span class="scoreK">Longest streak</span><span class="scoreV" id="modalLongestOut">0</span></div>
+              <div class="scoreItem"><span class="scoreK">Total Percentage Correct</span><span class="scoreV" id="modalAccuracyOut">0.0%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modalActions modalActionsCentered" style="margin-top: 16px;">
+        <button class="primary pulse" id="scoreModalContinueBtn" type="button">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="infoModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="modalCard" role="document">
+      <div class="modalTitle" id="infoTitle">More information 🧐</div>
+      <div class="modalBody">
+        <p>A 7th chord is constructed by taking a standard triad and stacking an extra third on top. Both of the chords in this game are built on a Major Triad, but feature a different 7th note:</p>
+        <p><strong>Major 7:</strong> Root + 4 semitones + 3 semitones + 4 semitones<br>
+          <strong>Dominant 7:</strong> Root + 4 semitones + 3 semitones + 3 semitones</p>
+        <p>Listen for the emotional qualities of these chords. <strong>Major 7ths</strong> often sound dreamy, jazzy, or resolved. <strong>Dominant 7ths</strong> feature a flatter, "minor" 7th interval which makes them sound bluesy, tense, and unresolved (like they want to lead into another chord).</p>
+      </div>
+      <div class="modalActions modalActionsCentered">
+        <button id="infoOk" type="button" class="primary">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal hidden" id="streakModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <div class="modalCard">
+      <div class="modalTitle" id="modalTitle">New Longest Streak!</div>
+      <div class="modalBody" id="modalBody">—</div>
+      <div class="modalActions modalActionsCentered">
+        <button id="modalDownload" type="button">Download Scorecard</button>
+        <button id="modalClose" type="button" class="primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
