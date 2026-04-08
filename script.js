@@ -132,6 +132,48 @@
     });
   });
 
+   // ---------------- iframe sizing & scroll forwarding ----------------
+  let lastHeight = 0;
+  const ro = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      // +50px buffer added here
+      const height = Math.ceil(entry.contentRect.height) + 50; 
+      if (height !== lastHeight) {
+        parent.postMessage({ iframeHeight: height }, "*");
+        lastHeight = height;
+      }
+    }
+  });
+  ro.observe(document.documentElement);
+
+  function postHeightNow() {
+    try {
+      const h = Math.max(
+        document.documentElement.scrollHeight,
+        document.body ? document.body.scrollHeight : 0
+      );
+      // +50px buffer added here
+      parent.postMessage({ iframeHeight: h + 50 }, "*");
+    } catch {}
+  }
+
+  window.addEventListener("load", () => {
+    postHeightNow();
+    setTimeout(postHeightNow, 250);
+    setTimeout(postHeightNow, 1000);
+  });
+
+  window.addEventListener("orientationchange", () => {
+    setTimeout(postHeightNow, 100);
+    setTimeout(postHeightNow, 500);
+  });
+
+  // This is left empty ("return;") so the browser handles scrolling natively, 
+  // which allows scrolling on mobile while modals are open.
+  function enableScrollForwardingToParent() {
+    return;
+  }
+
   // ---------------- UI Building ----------------
   function hexToRgba(hex, alpha) {
     const r = parseInt(hex.slice(1, 3), 16);
