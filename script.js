@@ -132,48 +132,6 @@
     });
   });
 
-   // ---------------- iframe sizing & scroll forwarding ----------------
-  let lastHeight = 0;
-  const ro = new ResizeObserver(entries => {
-    for (const entry of entries) {
-      // +50px buffer added here
-      const height = Math.ceil(entry.contentRect.height) + 50; 
-      if (height !== lastHeight) {
-        parent.postMessage({ iframeHeight: height }, "*");
-        lastHeight = height;
-      }
-    }
-  });
-  ro.observe(document.documentElement);
-
-  function postHeightNow() {
-    try {
-      const h = Math.max(
-        document.documentElement.scrollHeight,
-        document.body ? document.body.scrollHeight : 0
-      );
-      // +50px buffer added here
-      parent.postMessage({ iframeHeight: h + 50 }, "*");
-    } catch {}
-  }
-
-  window.addEventListener("load", () => {
-    postHeightNow();
-    setTimeout(postHeightNow, 250);
-    setTimeout(postHeightNow, 1000);
-  });
-
-  window.addEventListener("orientationchange", () => {
-    setTimeout(postHeightNow, 100);
-    setTimeout(postHeightNow, 500);
-  });
-
-  // This is left empty ("return;") so the browser handles scrolling natively, 
-  // which allows scrolling on mobile while modals are open.
-  function enableScrollForwardingToParent() {
-    return;
-  }
-
   // ---------------- UI Building ----------------
   function hexToRgba(hex, alpha) {
     const r = parseInt(hex.slice(1, 3), 16);
@@ -221,6 +179,47 @@
     });
   }
 
+  // ---------------- iframe sizing & scroll forwarding ----------------
+  let lastHeight = 0;
+  const ro = new ResizeObserver(entries => {
+    for (const entry of entries) {
+      // +50px buffer added here
+      const height = Math.ceil(entry.contentRect.height) + 50; 
+      if (height !== lastHeight) {
+        parent.postMessage({ iframeHeight: height }, "*");
+        lastHeight = height;
+      }
+    }
+  });
+  ro.observe(document.documentElement);
+
+  function postHeightNow() {
+    try {
+      const h = Math.max(
+        document.documentElement.scrollHeight,
+        document.body ? document.body.scrollHeight : 0
+      );
+      // +50px buffer added here
+      parent.postMessage({ iframeHeight: h + 50 }, "*");
+    } catch {}
+  }
+
+  window.addEventListener("load", () => {
+    postHeightNow();
+    setTimeout(postHeightNow, 250);
+    setTimeout(postHeightNow, 1000);
+  });
+
+  window.addEventListener("orientationchange", () => {
+    setTimeout(postHeightNow, 100);
+    setTimeout(postHeightNow, 500);
+  });
+
+  // This is left empty ("return;") so the browser handles scrolling natively, 
+  // which allows scrolling on mobile while modals are open.
+  function enableScrollForwardingToParent() {
+    return;
+  }
 
   // ---------------- audio ----------------
   let audioCtx = null;
@@ -414,7 +413,10 @@
     const bufs = results.map((r) => r?.buffer).filter(Boolean);
     if (!bufs.length) return false;
 
-    const perNoteGain = 0.70; 
+    // Apply a 3dB reduction for every additional note played simultaneously 
+    // to prevent the combined audio from clipping.
+    const perNoteGain = getDynamicGain(bufs.length, 1.5); 
+
     for (let i = 0; i < bufs.length; i++) {
       playBufferWindowed(bufs[i], whenSec, playSec, fadeOutSec, perNoteGain);
     }
@@ -481,6 +483,18 @@
     rootMin = Math.max(rootMin, c3);
     rootMax = Math.min(rootMax, maxRoot);
   }
+
+  // Calculates a linear gain multiplier by reducing a set amount of dB per extra voice
+function getDynamicGain(numVoices, dbReductionPerExtraVoice = 2.5) {
+  if (numVoices <= 1) return 1.0; // Full volume for a single note
+  
+  // Calculate the total decibel reduction
+  // (e.g., 4 notes = 3 extra voices. 3 * 2.5dB = -7.5dB total reduction)
+  const totalDbReduction = dbReductionPerExtraVoice * (numVoices - 1);
+  
+  // Convert the decibel reduction into a linear gain scale (0.0 to 1.0)
+  return Math.pow(10, -totalDbReduction / 20);
+}
 
   function pickChord() {
     computeRootBounds();
